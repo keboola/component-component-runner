@@ -46,7 +46,7 @@
           "description": "The name of your stack in connection.{CUSTOM_STACK}.keboola.cloud",
           "options": {
             "dependencies": {
-              "kbcUrl": "Custom Stack"
+              "keboola_stack": "Custom Stack"
             }
           }
         },
