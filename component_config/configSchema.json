@@ -16,6 +16,7 @@
         "#sapi_token": {
           "propertyOrder": 10,
           "title": "KBC Storage API token",
+          "format" : "password",
           "type": "string",
           "description": "<a href=\"https://help.keboola.com/management/project/tokens/#limited-access-to-components\">Limited Access SAPI Token</a> with restricted access to the component you wish to run in the project you wish to run it in."
         },
