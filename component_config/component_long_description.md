@@ -1,1 +1,1 @@
-Runs a compoennt job using a component ID and config
+Runs a job of a specified component with a specified set of variables

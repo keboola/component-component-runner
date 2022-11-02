@@ -1,17 +1,140 @@
 {
+  "title": "Configuration Schema",
   "type": "object",
-  "title": "extractor configuration",
-  "required": [
-    "print_hello"
-  ],
   "properties": {
-    "print_hello": {
-      "type": "boolean",
-      "title": "Print Hello"
+    "component_parameters": {
+      "propertyOrder": 10,
+      "title": "Component parameters",
+      "type": "object",
+      "description": "",
+      "required": [
+        "#sapi_token",
+        "component_id",
+        "config_id"
+      ],
+      "properties": {
+        "#sapi_token": {
+          "propertyOrder": 10,
+          "title": "KBC Storage API token",
+          "type": "string",
+          "description": "<a href=\"https://help.keboola.com/management/project/tokens/#limited-access-to-components\">Limited Access SAPI Token</a> with restricted access to the component you wish to run in the project you wish to run it in."
+        },
+        "keboola_stack": {
+          "propertyOrder": 20,
+          "title": "KBC Stack",
+          "type": "string",
+          "required": true,
+          "enum": [
+            "",
+            "eu-central-1.",
+            "north-europe.azure.",
+            "Custom Stack"
+          ],
+          "options": {
+            "enum_titles": [
+              "AWS US East - connection.keboola.com",
+              "AWS EU Central - connection.eu-central-1.keboola.com",
+              "Azure North Europe - connection.north-europe.azure.keboola.com",
+              "Custom Stack"
+            ]
+          }
+        },
+        "custom_stack": {
+          "title": "Custom Stack",
+          "type": "string",
+          "propertyOrder": 25,
+          "description": "The name of your stack in connection.{CUSTOM_STACK}.keboola.cloud",
+          "options": {
+            "dependencies": {
+              "kbcUrl": "Custom Stack"
+            }
+          }
+        },
+        "component_id": {
+          "propertyOrder": 30,
+          "title": "Component ID",
+          "type": "string",
+          "description": "The ID of the component you wish to run. Get the component id from the link :  ...keboola.com/admin/projects/{PROJECT_ID}/{COMPONENT_ID}"
+        },
+        "config_id": {
+          "propertyOrder": 40,
+          "title": "Configuration ID",
+          "type": "string",
+          "description": "The ID of the configuration of a component you wish to run. Get the configuration id from the link :  ...keboola.com/admin/projects/{PROJECT_ID}/{COMPONENT_ID}/{CONFIGURATION_ID}"
+        }
+      }
     },
-    "debug": {
-      "type": "boolean",
-      "title": "Debug"
+    "run_parameters": {
+      "propertyOrder": 60,
+      "title": "Run parameters",
+      "type": "object",
+      "description": "",
+      "properties": {
+        "wait_until_finish": {
+          "propertyOrder": 10,
+          "title": "Wait until finish",
+          "description" : "If checked, will wait for the execution of the job in Keboola to be finished",
+          "type": "boolean",
+          "format": "checkbox"
+        },
+        "use_variables": {
+          "propertyOrder": 30,
+          "title": "Use variables",
+          "type": "boolean",
+          "format": "checkbox",
+          "description" : "If checked, the defined variables will be used in the job run"
+        },
+        "variable_mode": {
+          "propertyOrder": 40,
+          "required": true,
+          "title": "Variable mode",
+          "type": "string",
+          "default": "from_file_run_first",
+          "description" : "Select which mode of input of variables you want to use",
+          "enum": [
+            "self_defined",
+            "from_file_run_all",
+            "from_file_run_first"
+          ],
+          "options": {
+            "enum_titles": [
+              "Variables Defined in Configuration",
+              "Variables Defined by Input Table - run all",
+              "Variables Defined by Input Table - run only first row"
+            ],
+            "dependencies": {
+              "use_variables": true
+            }
+          }
+        },
+        "variables": {
+          "type": "array",
+          "options": {
+            "dependencies": {
+              "variable_mode": "self_defined",
+              "use_variables": true
+            }
+          },
+          "propertyOrder": 50,
+          "format": "table",
+          "title": "Variables",
+          "uniqueItems": true,
+          "items": {
+            "type": "object",
+            "title": "Variable",
+            "properties": {
+              "name": {
+                "type": "string",
+                "title" : "Variable Name"
+              },
+              "value": {
+                "type": "string",
+                "title" : "Value"
+              }
+            }
+          }
+        }
+      }
     }
   }
 }

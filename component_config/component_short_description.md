@@ -1,1 +1,1 @@
-Runs components in keboola
+Components are specific applications that run in Keboola to perform specific actions with data.

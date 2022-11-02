@@ -1,57 +1,73 @@
 Component Runner
 =============
 
-Description
+This component runs a job of a specified component with a specified set of variables.
 
 **Table of contents:**
 
 [TOC]
-
-Functionality notes
-===================
-
 Prerequisites
 =============
 
-Get the API token, register application, etc.
-
-Features
-========
-
-| **Feature**             | **Note**                                      |
-|-------------------------|-----------------------------------------------|
-| Generic UI form         | Dynamic UI form                               |
-| Row Based configuration | Allows structuring the configuration in rows. |
-| oAuth                   | oAuth authentication enabled                  |
-| Incremental loading     | Allows fetching data in new increments.       |
-| Backfill mode           | Support for seamless backfill setup.          |
-| Date range filter       | Specify date range.                           |
-
-Supported endpoints
-===================
-
-If you need more endpoints, please submit your request to
-[ideas.keboola.com](https://ideas.keboola.com/)
+Get a Keboola Limited Access SAPI Token with restricted access to the component you wish to run in the project you wish to run it in.
 
 Configuration
 =============
 
-Param 1
--------
+## Configuration Schema
+ - Component parameters (component_parameters) - [REQ] 
+   - KBC Storage API token (#sapi_token) - [REQ] Limited Access SAPI Token with restricted access to the component you wish to run in the project you wish to run it in.
+   - KBC Stack (keboola_stack) - [OPT] The stack that your component configuration is in
+   - Custom Stack (custom_stack) - [OPT] The name of your stack in connection.{CUSTOM_STACK}.keboola.cloud
+   - Component ID (component_id) - [REQ] The ID of the component you wish to run. Get the component id from the link :  ...keboola.com/admin/projects/{PROJECT_ID}/{COMPONENT_ID}
+   - Configuration ID (config_id) - [REQ] The ID of the configuration of a component you wish to run. Get the configuration id from the link :  ...keboola.com/admin/projects/{PROJECT_ID}/{COMPONENT_ID}/{CONFIGURATION_ID}
+ - Run parameters (run_parameters) - [OPT] 
+   - Wait until finish (wait_until_finish) - [OPT] If checked, will wait for the execution of the job in Keboola to be finished
+   - Use variables (use_variables) - [OPT] If checked, the defined variables will be used in the job run
+   - Variable mode (variable_mode) - [OPT] Select which mode of input of variables you want to use
+   - Variables (variables) - [OPT] description
+     - Name (name) - [REQ] Name of the variable
+     - Value (value) - [REQ] Value of the variable
 
-Param 2
--------
 
-Output
-======
 
-List of tables, foreign keys, schema.
+
+Sample Configuration
+=============
+```json
+{
+    "parameters": {
+        "component_parameters": {
+            "#sapi_token": "SECRET_VALUE",
+            "keboola_stack": "",
+            "component_id": "keboola.python-transformation-v2",
+            "config_id": "810494893"
+        },
+        "run_parameters": {
+            "wait_until_finish": true,
+            "use_variables": true,
+            "variable_mode": "self_defined",
+            "variables": [
+                {
+                    "name": "var1",
+                    "value": "hi"
+                },
+                {
+                    "name": "var2",
+                    "value": "hello"
+                }
+            ]
+        }
+    },
+    "action": "run"
+}
+```
 
 Development
 -----------
 
-If required, change local data folder (the `CUSTOM_FOLDER` placeholder) path to
-your custom path in the `docker-compose.yml` file:
+If required, change local data folder (the `CUSTOM_FOLDER` placeholder) path to your custom path in
+the `docker-compose.yml` file:
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     volumes:
@@ -59,12 +75,9 @@ your custom path in the `docker-compose.yml` file:
       - ./CUSTOM_FOLDER:/data
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Clone this repository, init the workspace and run the component with following
-command:
+Clone this repository, init the workspace and run the component with following command:
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-git clone https://bitbucket.org/kds_consulting_team/kds-team.app-component-runner/src/master/ kds-team.app-component-runner
-cd kds-team.app-component-runner
 docker-compose build
 docker-compose run --rm dev
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -79,5 +92,4 @@ Integration
 ===========
 
 For information about deployment and integration with KBC, please refer to the
-[deployment section of developers
-documentation](https://developers.keboola.com/extend/component/deployment/)
+[deployment section of developers documentation](https://developers.keboola.com/extend/component/deployment/)
