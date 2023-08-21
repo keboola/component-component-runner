@@ -5,10 +5,10 @@ from typing import Optional, Dict
 from keboola.http_client import HttpClient
 from requests.exceptions import HTTPError
 
-BASE_URL = "https://syrup.keboola.com/docker/"
+BASE_URL = "https://syrup.{STACK}keboola.com/"
 QUEUE_URL = "https://syrup.keboola.com/queue/jobs/"
-
-RUN_ENDPOINT = "run"
+CLOUD_URL = "https://queue.{STACK}keboola.cloud"
+VALID_STACKS = ["", "eu-central-1.", "north-europe.azure."]
 
 
 class KeboolaClientQueueV1Exception(Exception):
@@ -16,13 +16,19 @@ class KeboolaClientQueueV1Exception(Exception):
 
 
 class KeboolaClientQueueV1(HttpClient):
-    def __init__(self, sapi_token: str) -> None:
+    def __init__(self, sapi_token: str, keboola_stack: str, custom_stack: str) -> None:
+        if keboola_stack == "Custom Stack":
+            base_url = CLOUD_URL.replace("{STACK}", custom_stack)
+        else:
+            base_url = BASE_URL.replace("{STACK}", keboola_stack)
+            self.validate_stack(keboola_stack)
+
         self.auth_header = {"Content-Type": "application/json",
                             "X-StorageApi-Token": sapi_token}
-        super().__init__(BASE_URL, auth_header=self.auth_header)
+        super().__init__(base_url, auth_header=self.auth_header)
 
     def run_job(self, component_id: str, config_id: str, variables: Optional[Dict]):
-        endpoint = "/".join([component_id, RUN_ENDPOINT])
+        endpoint = f"/docker/{component_id}/run"
         data = {"config": config_id}
         if variables:
             flat_variables = [{"name": k, "value": v} for k, v in variables.items()]
@@ -37,13 +43,18 @@ class KeboolaClientQueueV1(HttpClient):
         param = {"include": "metrics"}
         while not is_finished:
             try:
-                is_finished = self.get(endpoint_path=f"{QUEUE_URL}{job_id}",
-                                       is_absolute_path=True,
+                is_finished = self.get(endpoint_path=f"/queue/jobs/{job_id}",
                                        params=param).get("isFinished")
             except HTTPError as http_err:
                 raise KeboolaClientQueueV1Exception(http_err) from http_err
             time.sleep(10)
         try:
-            return self.get(endpoint_path=f"{QUEUE_URL}{job_id}", is_absolute_path=True, params=param).get("status")
+            return self.get(endpoint_path=f"{self.base_url}{job_id}", is_absolute_path=True, params=param).get("status")
         except HTTPError as http_err:
             raise KeboolaClientQueueV1Exception(http_err) from http_err
+
+    @staticmethod
+    def validate_stack(stack: str) -> None:
+        if stack not in VALID_STACKS:
+            raise KeboolaClientQueueV1Exception(
+                f"Invalid stack entered, make sure it is in the list of valid stacks {VALID_STACKS} ")
