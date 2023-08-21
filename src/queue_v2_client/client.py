@@ -1,14 +1,15 @@
 import json
 import time
-import requests
 from typing import Dict, Optional
-from requests.adapters import HTTPAdapter
-from requests.packages.urllib3.util.retry import Retry
-from requests.exceptions import HTTPError
+
+import requests
 from keboola.http_client import HttpClient
+from requests.adapters import HTTPAdapter
+from requests.exceptions import HTTPError
+from requests.packages.urllib3.util.retry import Retry
 
 QUEUE_V2_URL = "https://queue.{STACK}keboola.com"
-CLOUD_URL = "https://queue.{STACK}.keboola.cloud"
+CLOUD_URL = "https://queue.{STACK}keboola.cloud"
 VALID_STACKS = ["", "eu-central-1.", "north-europe.azure."]
 
 

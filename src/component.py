@@ -1,14 +1,13 @@
 import csv
 import logging
-
 from typing import Optional, Dict, Generator, List
+
+from keboola.component.base import ComponentBase
+from keboola.component.dao import TableDefinition
+from keboola.component.exceptions import UserException
 
 from queue_v1_client import KeboolaClientQueueV1, KeboolaClientQueueV1Exception
 from queue_v2_client import KeboolaClientQueueV2, KeboolaClientQueueV2Exception
-
-from keboola.component.base import ComponentBase
-from keboola.component.exceptions import UserException
-from keboola.component.dao import TableDefinition
 
 KEY_COMPONENT_PARAMETERS = "component_parameters"
 KEY_SAPI_TOKEN = "#sapi_token"
@@ -73,7 +72,7 @@ class Component(ComponentBase):
             self.run_job(component_id, config_id, wait_until_finish)
 
     def _init_clients(self, sapi_token: str, keboola_stack: str, custom_stack: str) -> None:
-        self.client_v1 = KeboolaClientQueueV1(sapi_token)
+        self.client_v1 = KeboolaClientQueueV1(sapi_token, keboola_stack, custom_stack)
         self.client_v2 = KeboolaClientQueueV2(sapi_token, keboola_stack, custom_stack)
 
     def run_job(self, component_id: str, config_id: str, wait_until_finish: bool,
