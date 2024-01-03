@@ -2,9 +2,13 @@ import csv
 import logging
 from typing import Optional, Dict, Generator, List
 
-from keboola.component.base import ComponentBase
+from keboola.component.base import ComponentBase, sync_action
 from keboola.component.dao import TableDefinition
 from keboola.component.exceptions import UserException
+from keboola.component.sync_actions import SelectElement
+
+from kbcstorage.components import Components
+from kbcstorage.configurations import Configurations
 
 from queue_v1_client import KeboolaClientQueueV1, KeboolaClientQueueV1Exception
 from queue_v2_client import KeboolaClientQueueV2, KeboolaClientQueueV2Exception
@@ -139,6 +143,54 @@ class Component(ComponentBase):
             yield next(self.get_variable_reader(input_table))
         else:
             raise UserException(f"Variable mode should be one of the following : {VARIABLE_MODES}")
+
+    @sync_action('list_components')
+    def list_components(self):
+        CONNECTION_URL = "https://connection.{STACK}keboola.com"
+
+        self.validate_configuration_parameters(REQUIRED_PARAMETERS)
+        self.validate_image_parameters(REQUIRED_IMAGE_PARS)
+        params = self.configuration.parameters
+
+        component_parameters = params.get(KEY_COMPONENT_PARAMETERS, {})
+        sapi_token = component_parameters.get(KEY_SAPI_TOKEN)
+
+        keboola_stack = component_parameters.get(KEY_KBC_STACK, "")
+        custom_stack = component_parameters.get(KEY_CUSTOM_STACK, "")
+
+        if keboola_stack == "Custom Stack":
+            root_url = CONNECTION_URL.replace("{STACK}", custom_stack)
+        else:
+            root_url = CONNECTION_URL.replace("{STACK}", keboola_stack)
+
+        components = Components(root_url, sapi_token, "default")
+
+        return [SelectElement(label=c['id'], value=c['id']) for c in components.list()]
+
+    @sync_action('list_configurations')
+    def list_configurations(self):
+        CONNECTION_URL = "https://connection.{STACK}keboola.com"
+
+        self.validate_configuration_parameters(REQUIRED_PARAMETERS)
+        self.validate_image_parameters(REQUIRED_IMAGE_PARS)
+        params = self.configuration.parameters
+
+        component_parameters = params.get(KEY_COMPONENT_PARAMETERS, {})
+        sapi_token = component_parameters.get(KEY_SAPI_TOKEN)
+        keboola_stack = component_parameters.get(KEY_KBC_STACK, "")
+        custom_stack = component_parameters.get(KEY_CUSTOM_STACK, "")
+
+        component_id = component_parameters.get(KEY_COMPONENT_ID)
+
+        if keboola_stack == "Custom Stack":
+            root_url = CONNECTION_URL.replace("{STACK}", custom_stack)
+        else:
+            root_url = CONNECTION_URL.replace("{STACK}", keboola_stack)
+
+        configuration = Configurations(root_url, sapi_token, "default")
+
+        return [SelectElement(label=f"[{c['id']}] {c['name']}", value=c['id'])
+                for c in configuration.list(component_id)]
 
 
 if __name__ == "__main__":
