@@ -55,7 +55,7 @@
           "propertyOrder": 30,
           "title": "Component ID",
           "type": "string",
-          "description": "The ID of the component you wish to run. Get the component id from the link :  ...keboola.com/admin/projects/{PROJECT_ID}/{COMPONENT_ID}",
+          "description": "The ID of the component you wish to run.",
           "enum": [],
           "format": "select",
           "options": {
@@ -70,7 +70,7 @@
           "propertyOrder": 40,
           "title": "Configuration ID",
           "type": "string",
-          "description": "The ID of the configuration of a component you wish to run. Get the configuration id from the link :  ...keboola.com/admin/projects/{PROJECT_ID}/{COMPONENT_ID}/{CONFIGURATION_ID}",
+          "description": "The ID of the configuration of a component you wish to run.",
           "enum": [],
           "format": "select",
           "options": {
