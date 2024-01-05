@@ -50,6 +50,7 @@ class Component(ComponentBase):
 
         component_parameters = params.get(KEY_COMPONENT_PARAMETERS, {})
         run_parameters = params.get(KEY_RUN_PARAMETERS, {})
+
         self._validate_parameters(component_parameters, REQUIRED_COMPONENT_PARAMETERS, 'component config parameters')
         self._validate_parameters(run_parameters, REQUIRED_RUN_PARAMETERS, 'component run parameters')
 
@@ -144,9 +145,18 @@ class Component(ComponentBase):
         else:
             raise UserException(f"Variable mode should be one of the following : {VARIABLE_MODES}")
 
+    @staticmethod
+    def get_stack_url(custom_stack, keboola_stack):
+        connection_url = "https://connection.{STACK}keboola.com"
+
+        if keboola_stack == "Custom Stack":
+            root_url = connection_url.replace("{STACK}", custom_stack)
+        else:
+            root_url = connection_url.replace("{STACK}", keboola_stack)
+        return root_url
+
     @sync_action('list_components')
     def list_components(self):
-        CONNECTION_URL = "https://connection.{STACK}keboola.com"
 
         self.validate_configuration_parameters(REQUIRED_PARAMETERS)
         self.validate_image_parameters(REQUIRED_IMAGE_PARS)
@@ -158,10 +168,7 @@ class Component(ComponentBase):
         keboola_stack = component_parameters.get(KEY_KBC_STACK, "")
         custom_stack = component_parameters.get(KEY_CUSTOM_STACK, "")
 
-        if keboola_stack == "Custom Stack":
-            root_url = CONNECTION_URL.replace("{STACK}", custom_stack)
-        else:
-            root_url = CONNECTION_URL.replace("{STACK}", keboola_stack)
+        root_url = self.get_stack_url(custom_stack, keboola_stack)
 
         components = Components(root_url, sapi_token, "default")
 
@@ -169,7 +176,6 @@ class Component(ComponentBase):
 
     @sync_action('list_configurations')
     def list_configurations(self):
-        CONNECTION_URL = "https://connection.{STACK}keboola.com"
 
         self.validate_configuration_parameters(REQUIRED_PARAMETERS)
         self.validate_image_parameters(REQUIRED_IMAGE_PARS)
@@ -182,10 +188,7 @@ class Component(ComponentBase):
 
         component_id = component_parameters.get(KEY_COMPONENT_ID)
 
-        if keboola_stack == "Custom Stack":
-            root_url = CONNECTION_URL.replace("{STACK}", custom_stack)
-        else:
-            root_url = CONNECTION_URL.replace("{STACK}", keboola_stack)
+        root_url = self.get_stack_url(custom_stack, keboola_stack)
 
         configuration = Configurations(root_url, sapi_token, "default")
 
