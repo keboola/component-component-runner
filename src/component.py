@@ -2,34 +2,18 @@ import csv
 import logging
 from typing import Optional, Dict, Generator, List
 
-from keboola.component.base import ComponentBase
+from configuration import Configuration, VariableMode
+
+from keboola.component.base import ComponentBase, sync_action
 from keboola.component.dao import TableDefinition
 from keboola.component.exceptions import UserException
+from keboola.component.sync_actions import SelectElement
+
+from kbcstorage.components import Components
+from kbcstorage.configurations import Configurations
 
 from queue_v1_client import KeboolaClientQueueV1, KeboolaClientQueueV1Exception
 from queue_v2_client import KeboolaClientQueueV2, KeboolaClientQueueV2Exception
-
-KEY_COMPONENT_PARAMETERS = "component_parameters"
-KEY_SAPI_TOKEN = "#sapi_token"
-KEY_COMPONENT_ID = "component_id"
-KEY_CONFIG_ID = "config_id"
-KEY_KBC_STACK = "keboola_stack"
-KEY_CUSTOM_STACK = "custom_stack"
-
-KEY_RUN_PARAMETERS = "run_parameters"
-KEY_WAIT_UNTIL_FINISH = "wait_until_finish"
-KEY_USE_VARIABLES = "use_variables"
-KEY_VARIABLE_MODE = "variable_mode"
-KEY_VARIABLES = "variables"
-KEY_VARIABLE_NAME = "name"
-KEY_VARIABLE_VALUE = "value"
-
-REQUIRED_PARAMETERS = [KEY_COMPONENT_PARAMETERS, KEY_RUN_PARAMETERS]
-REQUIRED_IMAGE_PARS = []
-REQUIRED_COMPONENT_PARAMETERS = [KEY_SAPI_TOKEN, KEY_COMPONENT_ID, KEY_CONFIG_ID, KEY_KBC_STACK]
-REQUIRED_RUN_PARAMETERS = [KEY_WAIT_UNTIL_FINISH, KEY_USE_VARIABLES]
-
-VARIABLE_MODES = ["self_defined", "from_file_run_all", "from_file_run_first"]
 
 
 class Component(ComponentBase):
@@ -40,25 +24,18 @@ class Component(ComponentBase):
         super().__init__()
 
     def run(self):
-        self.validate_configuration_parameters(REQUIRED_PARAMETERS)
-        self.validate_image_parameters(REQUIRED_IMAGE_PARS)
-        params = self.configuration.parameters
+        self._init_configuration()
 
-        component_parameters = params.get(KEY_COMPONENT_PARAMETERS, {})
-        run_parameters = params.get(KEY_RUN_PARAMETERS, {})
-        self._validate_parameters(component_parameters, REQUIRED_COMPONENT_PARAMETERS, 'component config parameters')
-        self._validate_parameters(run_parameters, REQUIRED_RUN_PARAMETERS, 'component run parameters')
+        component_id = self._configuration.component_parameters.component_id
+        config_id = self._configuration.component_parameters.config_id
+        sapi_token = self._configuration.component_parameters.pswd_sapi_token
+        keboola_stack = self._configuration.component_parameters.keboola_stack
+        custom_stack = self._configuration.component_parameters.custom_stack
 
-        component_id = component_parameters.get(KEY_COMPONENT_ID)
-        config_id = component_parameters.get(KEY_CONFIG_ID)
-        sapi_token = component_parameters.get(KEY_SAPI_TOKEN)
-        keboola_stack = component_parameters.get(KEY_KBC_STACK, "")
-        custom_stack = component_parameters.get(KEY_CUSTOM_STACK, "")
-
-        wait_until_finish = run_parameters.get(KEY_WAIT_UNTIL_FINISH)
-        use_variables = run_parameters.get(KEY_USE_VARIABLES)
-        variable_mode = run_parameters.get(KEY_VARIABLE_MODE)
-        variables = run_parameters.get(KEY_VARIABLES)
+        wait_until_finish = self._configuration.run_parameters.wait_until_finish
+        use_variables = self._configuration.run_parameters.use_variables
+        variable_mode = self._configuration.run_parameters.variable_mode
+        variables = self._configuration.run_parameters.variables
 
         self._init_clients(sapi_token, keboola_stack, custom_stack)
 
@@ -74,6 +51,10 @@ class Component(ComponentBase):
     def _init_clients(self, sapi_token: str, keboola_stack: str, custom_stack: str) -> None:
         self.client_v1 = KeboolaClientQueueV1(sapi_token, keboola_stack, custom_stack)
         self.client_v2 = KeboolaClientQueueV2(sapi_token, keboola_stack, custom_stack)
+
+    def _init_configuration(self) -> None:
+        self.validate_configuration_parameters(Configuration.get_dataclass_required_parameters())
+        self._configuration: Configuration = Configuration.load_from_dict(self.configuration.parameters)
 
     def run_job(self, component_id: str, config_id: str, wait_until_finish: bool,
                 variables: Optional[Dict] = None) -> None:
@@ -130,7 +111,7 @@ class Component(ComponentBase):
 
     def get_run_variables(self, variable_mode: str, variables: List[Dict]) -> Optional[Generator]:
         if variable_mode == "self_defined":
-            yield {var[KEY_VARIABLE_NAME]: var[KEY_VARIABLE_VALUE] for var in variables}
+            yield {var["name"]: var["value"] for var in variables}
         elif variable_mode == "from_file_run_all":
             input_table = self.get_single_input_table()
             yield from self.get_variable_reader(input_table)
@@ -138,7 +119,41 @@ class Component(ComponentBase):
             input_table = self.get_single_input_table()
             yield next(self.get_variable_reader(input_table))
         else:
-            raise UserException(f"Variable mode should be one of the following : {VARIABLE_MODES}")
+            raise UserException(f"Variable mode should be one of the following : "
+                                f"{', '.join(mode.value for mode in VariableMode)}")
+
+    @staticmethod
+    def get_stack_url(custom_stack, keboola_stack):
+        connection_url = "https://connection.{STACK}keboola.com"
+
+        if keboola_stack == "Custom Stack":
+            root_url = connection_url.replace("{STACK}", custom_stack)
+        else:
+            root_url = connection_url.replace("{STACK}", keboola_stack)
+        return root_url
+
+    @sync_action('list_components')
+    def list_components(self):
+        self._init_configuration()
+
+        stack_url = self.get_stack_url(self._configuration.component_parameters.custom_stack,
+                                       self._configuration.component_parameters.keboola_stack)
+
+        components = Components(stack_url, self._configuration.component_parameters.pswd_sapi_token, "default")
+
+        return [SelectElement(label=f"{c['name']} [{c['id']}]", value=c['id']) for c in components.list()]
+
+    @sync_action('list_configurations')
+    def list_configurations(self):
+        self._init_configuration()
+
+        stack_url = self.get_stack_url(self._configuration.component_parameters.custom_stack,
+                                       self._configuration.component_parameters.keboola_stack)
+
+        configuration = Configurations(stack_url, self._configuration.component_parameters.pswd_sapi_token, "default")
+
+        return [SelectElement(label=f"{c['name']} [{c['id']}]", value=c['id'])
+                for c in configuration.list(self._configuration.component_parameters.component_id)]
 
 
 if __name__ == "__main__":
