@@ -141,7 +141,7 @@ class Component(ComponentBase):
 
         components = Components(stack_url, self._configuration.component_parameters.pswd_sapi_token, "default")
 
-        return [SelectElement(label=c['id'], value=c['id']) for c in components.list()]
+        return [SelectElement(label=f"{c['name']} [{c['id']}]", value=c['id']) for c in components.list()]
 
     @sync_action('list_configurations')
     def list_configurations(self):
@@ -152,7 +152,7 @@ class Component(ComponentBase):
 
         configuration = Configurations(stack_url, self._configuration.component_parameters.pswd_sapi_token, "default")
 
-        return [SelectElement(label=f"[{c['id']}] {c['name']}", value=c['id'])
+        return [SelectElement(label=f"{c['name']} [{c['id']}]", value=c['id'])
                 for c in configuration.list(self._configuration.component_parameters.component_id)]
 
 
