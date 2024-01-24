@@ -18,10 +18,18 @@ class KeboolaClientQueueV2Exception(Exception):
 
 
 class KeboolaClientQueueV2(HttpClient):
-    def __init__(self, sapi_token: str, keboola_stack: str, custom_stack: Optional[str]) -> None:
+    def __init__(self, sapi_token: str, keboola_stack: str, custom_cloud_stack: Optional[str]) -> None:
+        """
+        Args:
+            sapi_token:
+            keboola_stack: str, e.g. https://queue.{STACK}keboola.com.
+                           For instance one of ["", "eu-central-1.", "north-europe.azure.", "Custom Stack"]
+            custom_cloud_stack: str, name of custom stack (https://queue.{STACK}keboola.cloud),
+                          required if keboola_stack == "Custom Stack"
+        """
         auth_header = {"X-StorageApi-Token": sapi_token}
         if keboola_stack == "Custom Stack":
-            job_url = CLOUD_URL.replace("{STACK}", custom_stack)
+            job_url = CLOUD_URL.replace("{STACK}", custom_cloud_stack)
         else:
             job_url = QUEUE_V2_URL.replace("{STACK}", keboola_stack)
             self.validate_stack(keboola_stack)
