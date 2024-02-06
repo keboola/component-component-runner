@@ -28,6 +28,10 @@ class KeboolaClientQueueV2(HttpClient):
                           required if keboola_stack == "Custom Stack"
         """
         auth_header = {"X-StorageApi-Token": sapi_token}
+
+        if not custom_cloud_stack.endswith("."):
+            custom_cloud_stack = custom_cloud_stack+"."
+
         if keboola_stack == "Custom Stack":
             job_url = CLOUD_URL.replace("{STACK}", custom_cloud_stack)
         else:
