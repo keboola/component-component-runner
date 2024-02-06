@@ -125,9 +125,13 @@ class Component(ComponentBase):
     @staticmethod
     def get_stack_url(custom_stack, keboola_stack):
         connection_url = "https://connection.{STACK}keboola.com"
+        cloud_url = "https://queue.{STACK}keboola.cloud"
+
+        if not custom_stack.endswith("."):
+            custom_stack = custom_stack+"."
 
         if keboola_stack == "Custom Stack":
-            root_url = connection_url.replace("{STACK}", custom_stack)
+            root_url = cloud_url.replace("{STACK}", custom_stack)
         else:
             root_url = connection_url.replace("{STACK}", keboola_stack)
         return root_url
