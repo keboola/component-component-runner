@@ -125,7 +125,7 @@ class Component(ComponentBase):
     @staticmethod
     def get_stack_url(custom_stack, keboola_stack):
         connection_url = "https://connection.{STACK}keboola.com"
-        cloud_url = "https://queue.{STACK}keboola.cloud"
+        cloud_url = "https://connection.{STACK}keboola.cloud"
 
         if not custom_stack.endswith("."):
             custom_stack = custom_stack+"."
