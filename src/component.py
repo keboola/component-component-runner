@@ -74,6 +74,7 @@ class Component(ComponentBase):
         try:
             return self.client_v2.run_job(component_id, config_id, variables)
         except KeboolaClientQueueV2Exception as v2_exc:
+            logging.warning(f"Failed to run the component job using V2 API \n{v2_exc}")
             try:
                 return self.client_v1.run_job(component_id, config_id, variables)
             except KeboolaClientQueueV1Exception as v1_exc:
