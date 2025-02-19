@@ -4,6 +4,7 @@ from typing import Optional, Dict
 
 from keboola.http_client import HttpClient
 from requests.exceptions import HTTPError
+import logging
 
 BASE_URL = "https://syrup.{STACK}keboola.com/"
 QUEUE_URL = "https://syrup.keboola.com/queue/jobs/"
@@ -19,9 +20,12 @@ class KeboolaClientQueueV1(HttpClient):
     def __init__(self, sapi_token: str, keboola_stack: str, custom_stack: str) -> None:
         if keboola_stack == "Custom Stack":
             base_url = CLOUD_URL.replace("{STACK}", custom_stack)
+            logging.info(f"Using custom stack: {base_url}")
+
         else:
             base_url = BASE_URL.replace("{STACK}", keboola_stack)
             self.validate_stack(keboola_stack)
+            logging.info(f"validating stack: {base_url}")
 
         self.auth_header = {"Content-Type": "application/json",
                             "X-StorageApi-Token": sapi_token}

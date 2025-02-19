@@ -38,6 +38,7 @@ class KeboolaClientQueueV2(HttpClient):
             logging.info(f"Using custom stack: {job_url}")
         else:
             job_url = QUEUE_V2_URL.replace("{STACK}", keboola_stack)
+            logging.info(f"validating stack: {job_url}")
             self.validate_stack(keboola_stack)
         super().__init__(job_url, auth_header=auth_header)
 
@@ -55,6 +56,8 @@ class KeboolaClientQueueV2(HttpClient):
             flat_variables = [{"name": k, "value": v} for k, v in variables.items()]
             data["variableValuesData"] = {"values": flat_variables}
         header = {'Content-Type': 'application/json'}
+
+        logging.info(f"Starting job {config_id}")
 
         response = self.post_raw(endpoint_path="jobs", headers=header, data=json.dumps(data))
         self._handle_http_error(response)
