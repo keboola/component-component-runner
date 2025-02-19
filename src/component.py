@@ -39,7 +39,7 @@ class Component(ComponentBase):
 
         self._init_clients(sapi_token, keboola_stack, custom_stack)
 
-        logging.info(f"Clients initialized")
+        logging.info("Clients initialized")
 
         if use_variables:
             run_variable_groups = self.get_run_variables(variable_mode, variables)
