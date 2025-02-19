@@ -7,6 +7,7 @@ from keboola.http_client import HttpClient
 from requests.adapters import HTTPAdapter
 from requests.exceptions import HTTPError
 from requests.packages.urllib3.util.retry import Retry
+import logging
 
 QUEUE_V2_URL = "https://queue.{STACK}keboola.com"
 CLOUD_URL = "https://queue.{STACK}keboola.cloud"
@@ -34,6 +35,7 @@ class KeboolaClientQueueV2(HttpClient):
 
         if keboola_stack == "Custom Stack":
             job_url = CLOUD_URL.replace("{STACK}", custom_cloud_stack)
+            logging.info(f"Using custom stack: {job_url}")
         else:
             job_url = QUEUE_V2_URL.replace("{STACK}", keboola_stack)
             self.validate_stack(keboola_stack)
@@ -56,10 +58,12 @@ class KeboolaClientQueueV2(HttpClient):
 
         response = self.post_raw(endpoint_path="jobs", headers=header, data=json.dumps(data))
         self._handle_http_error(response)
+        logging.info(f"Job {config_id} started")
         return json.loads(response.text)
 
     def wait_until_job_finished(self, job_id: str) -> str:
         is_finished = False
+        logging.info(f"Waiting for job {job_id} to finish")
         while not is_finished:
             try:
                 response = self.get_raw(endpoint_path=f"jobs/{job_id}")
