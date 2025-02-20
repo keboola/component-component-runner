@@ -58,8 +58,10 @@ class KeboolaClientQueueV2(HttpClient):
         header = {'Content-Type': 'application/json'}
 
         logging.info(f"Starting job {config_id}")
-
-        response = self.post_raw(endpoint_path="jobs", headers=header, data=json.dumps(data))
+        try:
+            response = self.post_raw(endpoint_path="jobs", headers=header, data=json.dumps(data))
+        except Exception as e:
+            logging.error(f"Error starting job using v2 {e}")
         self._handle_http_error(response)
         logging.info(f"Job {config_id} started")
         return json.loads(response.text)
