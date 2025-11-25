@@ -60,6 +60,12 @@ class ComponentParameters(ConfigurationBase):
     keboola_stack: str = ""
     custom_stack: str = ""
 
+    def __post_init__(self):
+        # Normalize keboola_stack to handle the " " enum value from UI
+        # This maps " " back to "" for URL construction while keeping other values unchanged
+        if self.keboola_stack is not None:
+            self.keboola_stack = self.keboola_stack.strip()
+
 
 @dataclass
 class RunParameters(ConfigurationBase):
