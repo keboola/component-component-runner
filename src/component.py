@@ -56,8 +56,9 @@ class Component(ComponentBase):
         self.validate_configuration_parameters(Configuration.get_dataclass_required_parameters())
         self._configuration: Configuration = Configuration.load_from_dict(self.configuration.parameters)
 
-    def run_job(self, component_id: str, config_id: str, wait_until_finish: bool,
-                variables: Optional[Dict] = None) -> None:
+    def run_job(
+        self, component_id: str, config_id: str, wait_until_finish: bool, variables: Optional[Dict] = None
+    ) -> None:
         response = self.run_component_job(component_id, config_id, variables)
         job_id = response.get("id")
         logging.info(f"Job execution started with job ID {job_id}")
@@ -67,8 +68,10 @@ class Component(ComponentBase):
             self.process_status(status)
             logging.info(f"Job {job_id} finished with success")
         else:
-            logging.info("Job is being run. if you require the trigger to wait "
-                         "till the job is finished, specify this in the configuration")
+            logging.info(
+                "Job is being run. if you require the trigger to wait "
+                "till the job is finished, specify this in the configuration"
+            )
 
     def run_component_job(self, component_id: str, config_id: str, variables: Optional[Dict] = None) -> Dict:
         try:
@@ -77,8 +80,10 @@ class Component(ComponentBase):
             try:
                 return self.client_v1.run_job(component_id, config_id, variables)
             except KeboolaClientQueueV1Exception as v1_exc:
-                raise UserException(f"Failed to run the component job, please recheck the validity of "
-                                    f"your configuration \n\n{v2_exc, v1_exc}") from v1_exc
+                raise UserException(
+                    f"Failed to run the component job, please recheck the validity of "
+                    f"your configuration \n\n{v2_exc, v1_exc}"
+                ) from v1_exc
 
     def get_single_input_table(self) -> Optional[TableDefinition]:
         input_tables = self.get_input_tables_definitions()
@@ -96,8 +101,7 @@ class Component(ComponentBase):
             try:
                 return self.client_v1.wait_until_job_finished(job_id)
             except KeboolaClientQueueV1Exception as v1_exc:
-                raise UserException(f"Failed to monitor Job ID {job_id}."
-                                    f"\n\n{v2_exc, v1_exc}") from v1_exc
+                raise UserException(f"Failed to monitor Job ID {job_id}." f"\n\n{v2_exc, v1_exc}") from v1_exc
 
     @staticmethod
     def process_status(status: str) -> None:
@@ -106,7 +110,7 @@ class Component(ComponentBase):
 
     @staticmethod
     def get_variable_reader(input_table: TableDefinition) -> Generator:
-        with open(input_table.full_path, 'r') as in_table:
+        with open(input_table.full_path, "r") as in_table:
             yield from csv.DictReader(in_table)
 
     def get_run_variables(self, variable_mode: str, variables: List[Dict]) -> Optional[Generator]:
@@ -119,8 +123,9 @@ class Component(ComponentBase):
             input_table = self.get_single_input_table()
             yield next(self.get_variable_reader(input_table))
         else:
-            raise UserException(f"Variable mode should be one of the following : "
-                                f"{', '.join(mode.value for mode in VariableMode)}")
+            raise UserException(
+                f"Variable mode should be one of the following : " f"{', '.join(mode.value for mode in VariableMode)}"
+            )
 
     @staticmethod
     def get_stack_url(custom_stack, keboola_stack):
@@ -128,7 +133,7 @@ class Component(ComponentBase):
         cloud_url = "https://connection.{STACK}keboola.cloud"
 
         if not custom_stack.endswith("."):
-            custom_stack = custom_stack+"."
+            custom_stack = custom_stack + "."
 
         # Strip whitespace from keboola_stack to handle the " " enum value for connection.keboola.com
         keboola_stack = keboola_stack.strip()
@@ -139,28 +144,34 @@ class Component(ComponentBase):
             root_url = connection_url.replace("{STACK}", keboola_stack)
         return root_url
 
-    @sync_action('list_components')
+    @sync_action("list_components")
     def list_components(self):
         self._init_configuration()
 
-        stack_url = self.get_stack_url(self._configuration.component_parameters.custom_stack,
-                                       self._configuration.component_parameters.keboola_stack)
+        stack_url = self.get_stack_url(
+            self._configuration.component_parameters.custom_stack,
+            self._configuration.component_parameters.keboola_stack,
+        )
 
         components = Components(stack_url, self._configuration.component_parameters.pswd_sapi_token, "default")
 
-        return [SelectElement(label=f"{c['name']} {c['type']} [{c['id']}]", value=c['id']) for c in components.list()]
+        return [SelectElement(label=f"{c['name']} {c['type']} [{c['id']}]", value=c["id"]) for c in components.list()]
 
-    @sync_action('list_configurations')
+    @sync_action("list_configurations")
     def list_configurations(self):
         self._init_configuration()
 
-        stack_url = self.get_stack_url(self._configuration.component_parameters.custom_stack,
-                                       self._configuration.component_parameters.keboola_stack)
+        stack_url = self.get_stack_url(
+            self._configuration.component_parameters.custom_stack,
+            self._configuration.component_parameters.keboola_stack,
+        )
 
         configuration = Configurations(stack_url, self._configuration.component_parameters.pswd_sapi_token, "default")
 
-        return [SelectElement(label=f"{c['name']} [{c['id']}]", value=c['id'])
-                for c in configuration.list(self._configuration.component_parameters.component_id)]
+        return [
+            SelectElement(label=f"{c['name']} [{c['id']}]", value=c["id"])
+            for c in configuration.list(self._configuration.component_parameters.component_id)
+        ]
 
 
 if __name__ == "__main__":

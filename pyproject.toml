@@ -14,3 +14,24 @@ dependencies = [
     "dataconf==2.4.0",
     "pyhocon==0.3.59",
 ]
+
+[tool.black]
+line-length = 120
+exclude = '''
+/(
+    \.git
+  | \.venv
+  | venv
+  | env
+  | build
+  | dist
+  | data
+)/
+'''
+
+[dependency-groups]
+dev = [
+    "black>=25.9.0",
+    "flake8>=7.3.0",
+    "ruff>=0.13.3",
+]
