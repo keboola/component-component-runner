@@ -26,7 +26,7 @@
           "type": "string",
           "required": true,
           "enum": [
-            "",
+            " ",
             "eu-central-1.",
             "north-europe.azure.",
             "europe-west3.gcp.",

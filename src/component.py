@@ -130,6 +130,9 @@ class Component(ComponentBase):
         if not custom_stack.endswith("."):
             custom_stack = custom_stack+"."
 
+        # Strip whitespace from keboola_stack to handle the " " enum value for connection.keboola.com
+        keboola_stack = keboola_stack.strip()
+
         if keboola_stack == "Custom Stack":
             root_url = cloud_url.replace("{STACK}", custom_stack)
         else:
