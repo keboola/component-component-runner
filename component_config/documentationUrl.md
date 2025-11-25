@@ -1,0 +1,1 @@
+https://github.com/keboola/component-component-runner/blob/master/README.md
