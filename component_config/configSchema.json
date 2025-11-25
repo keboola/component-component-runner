@@ -6,7 +6,7 @@
       "propertyOrder": 10,
       "title": "Component parameters",
       "type": "object",
-      "description": "",
+      "description": "Configure which component and configuration to run, along with the target Keboola stack.",
       "required": [
         "#sapi_token",
         "component_id",
@@ -25,6 +25,7 @@
           "title": "KBC Stack",
           "type": "string",
           "required": true,
+          "description": "Select the Keboola stack where the target component configuration exists. Choose 'Custom Stack' for private or single-tenant deployments.",
           "enum": [
             " ",
             "eu-central-1.",
@@ -59,7 +60,7 @@
           "propertyOrder": 30,
           "title": "Component ID",
           "type": "string",
-          "description": "The ID of the component you wish to run.",
+          "description": "Select the component you want to run. Click 'Re-load components' to fetch available components from the selected stack using your SAPI token.",
           "enum": [],
           "format": "select",
           "options": {
@@ -74,7 +75,7 @@
           "propertyOrder": 40,
           "title": "Configuration ID",
           "type": "string",
-          "description": "The ID of the configuration of a component you wish to run.",
+          "description": "Select the configuration to run. Click 'Re-load configurations' after selecting a component to fetch its available configurations.",
           "enum": [],
           "format": "select",
           "options": {
@@ -91,12 +92,12 @@
       "propertyOrder": 60,
       "title": "Run parameters",
       "type": "object",
-      "description": "",
+      "description": "Configure how the component job should be executed and whether to use variables.",
       "properties": {
         "wait_until_finish": {
           "propertyOrder": 10,
           "title": "Wait until finish",
-          "description" : "If checked, will wait for the execution of the job in Keboola to be finished",
+          "description" : "If checked, the Component Runner will wait for the triggered job to complete before finishing. This is useful when you need to ensure the job succeeded before continuing in a flow.",
           "type": "boolean",
           "format": "checkbox"
         },
@@ -105,7 +106,7 @@
           "title": "Use variables",
           "type": "boolean",
           "format": "checkbox",
-          "description" : "If checked, the defined variables will be used in the job run"
+          "description" : "Enable this to pass variables to the component run. Variables can be defined manually below or loaded from an input table."
         },
         "variable_mode": {
           "propertyOrder": 40,
@@ -113,7 +114,7 @@
           "title": "Variable mode",
           "type": "string",
           "default": "from_file_run_first",
-          "description" : "Select which mode of input of variables you want to use",
+          "description" : "Choose how variables are provided: manually defined in this configuration, or loaded from an input table (where column names are variable names and each row triggers a separate run).",
           "enum": [
             "self_defined",
             "from_file_run_all",
@@ -141,6 +142,7 @@
           "propertyOrder": 50,
           "format": "table",
           "title": "Variables",
+          "description": "Define the variables to pass to the component run. Each variable needs a name (matching the variable name in the target configuration) and a value.",
           "uniqueItems": true,
           "items": {
             "type": "object",
@@ -148,11 +150,13 @@
             "properties": {
               "name": {
                 "type": "string",
-                "title" : "Variable Name"
+                "title" : "Variable Name",
+                "description": "The exact name of the variable as defined in the target component configuration."
               },
               "value": {
                 "type": "string",
-                "title" : "Value"
+                "title" : "Value",
+                "description": "The value to assign to this variable for the component run."
               }
             }
           }
