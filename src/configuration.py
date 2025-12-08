@@ -39,11 +39,11 @@ class ConfigurationBase:
         Returns: List[str]
 
         """
-        return [cls._convert_private_value_inv(f.name)
-                for f in dataclasses.fields(cls)
-                if f.default == dataclasses.MISSING
-                and f.default_factory == dataclasses.MISSING
-                ]
+        return [
+            cls._convert_private_value_inv(f.name)
+            for f in dataclasses.fields(cls)
+            if f.default == dataclasses.MISSING and f.default_factory == dataclasses.MISSING
+        ]
 
 
 class VariableMode(str, Enum):
@@ -59,6 +59,12 @@ class ComponentParameters(ConfigurationBase):
     config_id: str = ""
     keboola_stack: str = ""
     custom_stack: str = ""
+
+    def __post_init__(self):
+        # Normalize keboola_stack to handle the " " enum value from UI
+        # This maps " " back to "" for URL construction while keeping other values unchanged
+        if self.keboola_stack is not None:
+            self.keboola_stack = self.keboola_stack.strip()
 
 
 @dataclass

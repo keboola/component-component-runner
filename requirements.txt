@@ -1,9 +1,0 @@
-keboola.component==1.4.4
-keboola.utils
-keboola.http-client
-mock~=4.0.3
-freezegun~=1.2
-requests==2.31.0
-kbcstorage==0.7.2
-dataconf==2.4.0
-pyhocon==0.3.59

@@ -23,8 +23,7 @@ class KeboolaClientQueueV1(HttpClient):
             base_url = BASE_URL.replace("{STACK}", keboola_stack)
             self.validate_stack(keboola_stack)
 
-        self.auth_header = {"Content-Type": "application/json",
-                            "X-StorageApi-Token": sapi_token}
+        self.auth_header = {"Content-Type": "application/json", "X-StorageApi-Token": sapi_token}
         super().__init__(base_url, auth_header=self.auth_header)
 
     def run_job(self, component_id: str, config_id: str, variables: Optional[Dict]):
@@ -43,8 +42,7 @@ class KeboolaClientQueueV1(HttpClient):
         param = {"include": "metrics"}
         while not is_finished:
             try:
-                is_finished = self.get(endpoint_path=f"/queue/jobs/{job_id}",
-                                       params=param).get("isFinished")
+                is_finished = self.get(endpoint_path=f"/queue/jobs/{job_id}", params=param).get("isFinished")
             except HTTPError as http_err:
                 raise KeboolaClientQueueV1Exception(http_err) from http_err
             time.sleep(10)
@@ -57,4 +55,5 @@ class KeboolaClientQueueV1(HttpClient):
     def validate_stack(stack: str) -> None:
         if stack not in VALID_STACKS:
             raise KeboolaClientQueueV1Exception(
-                f"Invalid stack entered, make sure it is in the list of valid stacks {VALID_STACKS} ")
+                f"Invalid stack entered, make sure it is in the list of valid stacks {VALID_STACKS} "
+            )

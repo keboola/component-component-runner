@@ -30,7 +30,7 @@ class KeboolaClientQueueV2(HttpClient):
         auth_header = {"X-StorageApi-Token": sapi_token}
 
         if not custom_cloud_stack.endswith("."):
-            custom_cloud_stack = custom_cloud_stack+"."
+            custom_cloud_stack = custom_cloud_stack + "."
 
         if keboola_stack == "Custom Stack":
             job_url = CLOUD_URL.replace("{STACK}", custom_cloud_stack)
@@ -43,16 +43,15 @@ class KeboolaClientQueueV2(HttpClient):
     def validate_stack(stack: str) -> None:
         if stack not in VALID_STACKS:
             raise KeboolaClientQueueV2Exception(
-                f"Invalid stack entered, make sure it is in the list of valid stacks {VALID_STACKS} ")
+                f"Invalid stack entered, make sure it is in the list of valid stacks {VALID_STACKS} "
+            )
 
     def run_job(self, component_id: str, config_id: str, variables: Optional[Dict]) -> Dict:
-        data = {"component": component_id,
-                "mode": "run",
-                "config": config_id}
+        data = {"component": component_id, "mode": "run", "config": config_id}
         if variables:
             flat_variables = [{"name": k, "value": v} for k, v in variables.items()]
             data["variableValuesData"] = {"values": flat_variables}
-        header = {'Content-Type': 'application/json'}
+        header = {"Content-Type": "application/json"}
 
         response = self.post_raw(endpoint_path="jobs", headers=header, data=json.dumps(data))
         self._handle_http_error(response)
@@ -82,7 +81,8 @@ class KeboolaClientQueueV2(HttpClient):
         except requests.HTTPError as e:
             response_error = json.loads(e.response.text)
             raise KeboolaClientQueueV2Exception(
-                f"{response_error.get('error')}. Exception code {response_error.get('code')}") from e
+                f"{response_error.get('error')}. Exception code {response_error.get('code')}"
+            ) from e
 
     # override to continue on failure
     def _requests_retry_session(self, session=None):
@@ -92,9 +92,9 @@ class KeboolaClientQueueV2(HttpClient):
             read=self.max_retries,
             connect=self.max_retries,
             backoff_factor=self.backoff_factor,
-            status_forcelist=self.status_forcelist
+            status_forcelist=self.status_forcelist,
         )
         adapter = HTTPAdapter(max_retries=retry)
-        session.mount('http://', adapter)
-        session.mount('https://', adapter)
+        session.mount("http://", adapter)
+        session.mount("https://", adapter)
         return session
