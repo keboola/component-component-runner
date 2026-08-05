@@ -81,8 +81,9 @@ class Component(ComponentBase):
             # job, and retrying it would start a second one.
             raise UserException(
                 f"Could not read the Keboola Queue API reply when starting the job of component "
-                f"'{component_id}'. This is usually a temporary problem, re-run the configuration. "
-                f"\n\n{response_exc}"
+                f"'{component_id}'. The job may or may not have been started. Check the job list "
+                f"for '{component_id}' before running this configuration again, so that the job is "
+                f"not started twice.\n\n{response_exc}"
             ) from response_exc
         except KeboolaClientQueueV2Exception as v2_exc:
             try:
@@ -109,8 +110,10 @@ class Component(ComponentBase):
             # Not routed to the Queue V1 fallback on purpose: a job that the V1 API cannot report on
             # would otherwise be treated as if its status had been read successfully.
             raise UserException(
-                f"Could not read the Keboola Queue API reply while monitoring job ID {job_id}. "
-                f"This is usually a temporary problem, re-run the configuration.\n\n{response_exc}"
+                f"Could not read the Keboola Queue API reply while monitoring job ID {job_id}. That "
+                f"job is unaffected and still runs to completion. Check its result in the job list "
+                f"rather than running this configuration again, which would start a second job."
+                f"\n\n{response_exc}"
             ) from response_exc
         except KeboolaClientQueueV2Exception as v2_exc:
             try:
