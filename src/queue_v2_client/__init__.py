@@ -1,1 +1,5 @@
-from .client import KeboolaClientQueueV2, KeboolaClientQueueV2Exception  # noqa
+from .client import (  # noqa
+    KeboolaClientQueueV2,
+    KeboolaClientQueueV2Exception,
+    KeboolaClientQueueV2ResponseError,
+)
